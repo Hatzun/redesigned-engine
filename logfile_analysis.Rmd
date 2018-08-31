@@ -8,7 +8,6 @@ library(readr)
 library(tidyverse)
 library(lubridate)
 library(feather)
-library(data.table)
 ```
 
 Read in the log file with the fread command, this might take a while because of how large the file is. Also format the time column into the correct type.
@@ -19,6 +18,7 @@ logfile <- read_csv("log20170516.csv",
 ```
 
 ```{r}
+library(data.table)
 logfile <- fread("log20170516.csv", data.table = FALSE)
 ```
 

@@ -8,3 +8,6 @@
 *.zip
 *.html
 *.idx
+data
+.idea
+.ipynb_checkpoints

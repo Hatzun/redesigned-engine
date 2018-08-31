@@ -1,0 +1,62 @@
+---
+title: "logfile analysis"
+output: html_notebook
+---
+
+```{r include=FALSE}
+library(readr)
+library(tidyverse)
+library(lubridate)
+library(feather)
+library(data.table)
+```
+
+Read in the log file with the fread command, this might take a while because of how large the file is. Also format the time column into the correct type.
+
+```{r eval=FALSE, include=FALSE}
+logfile <- read_csv("log20170516.csv", 
+                    col_types = cols(time = col_time(format = "%H:%M:%S")))
+```
+
+```{r}
+logfile <- fread("log20170516.csv", data.table = FALSE)
+```
+
+Then find the company in question via the CIK number, using native R subsetting.
+
+Also, create a new column dt by pasting together the date and time, set timezone to GMT which makes the variable a POSIXct class.
+
+```{r}
+comp <- logfile[logfile$cik == "791519",]
+comp$dt <- ymd_hms(paste(df$date, df$time))
+```
+
+Now let's sort the top 10 documents accessed that day by the accession number.
+
+```{r}
+top.files <- comp %>% 
+  count(accession) %>% 
+  top_n(10, n)
+```
+
+Create a histogram of the number of requests that were received during the day. The bins are 600 seconds wide, so 10 minute chunks. We will use a 120 min break to get a better sense of the timeline.
+
+```{r}
+total.counts <- comp %>%
+  ggplot(aes(dt)) +
+  geom_histogram(binwidth = 600) +
+  scale_x_datetime(date_breaks = ("120 mins")) +
+  theme(axis.text.x = element_text(angle = 25, vjust = 1.0, hjust = 1.0))
+```
+
+Next, we create a histogram of only the top 10 files individually plotted, differentiated by color to compare the number of accesses.
+
+```{r}
+top.counts <- comp %>%
+  filter(accession %in% top.files$accession)
+  ggplot(aes(dt, color = accession)) +
+  geom_freqpoly(binwidth = 600, show.legend = FALSE) +
+  scale_x_datetime(date_breaks = ("120 mins")) +
+  theme(axis.text.x = element_text(angle = 25, vjust = 1.0, hjust = 1.0))
+```
+

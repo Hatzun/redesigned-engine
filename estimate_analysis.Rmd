@@ -1,0 +1,35 @@
+---
+title: "Consensus Estimates"
+output: html_notebook
+---
+We will try using data.table package for this analysis.
+
+```{r}
+library(data.table)
+```
+
+First, lets import the data and reshape it. Since it is messed up.
+
+```{r}
+est <- fread("data/estimates_csv.csv")
+
+est.fill <- copy(est)
+est.fill[3, Value := "Revenues"]
+est.fill[5,Value := 'EBIT']
+est.fill[7,Value := 'EPS']
+est.fill[9,Value := 'FCF per share']
+est.fill[11,Value := 'Gross Margin']
+est.fill[13,Value := 'BV per share']
+est.fill[,Value := est.fill[1:13, Value]]
+```
+
+Experiment to transpose
+
+```{r}
+amzn <- est.fill[1:3]
+cols <- names(amzn[4:23])
+dts <- amzn[1,4:23]
+dts <- t(dts)
+setnames(amzn, cols[4:23], dts[4:23])
+```
+
